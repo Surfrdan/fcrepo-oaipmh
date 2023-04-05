@@ -1,3 +1,8 @@
+/*
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree.
+ */
 package org.fcrepo.oaipmh;
 
 import org.springframework.web.bind.annotation.RestController;
@@ -24,17 +29,24 @@ public class OaipmhController {
 
     @PostMapping(value = "oai", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     @ResponseBody
-    public ResponseEntity<String> post(@RequestParam MultiValueMap<String,String> paramMap) throws Exception {
+    public ResponseEntity<String> post(@RequestParam MultiValueMap<String,String> paramMap) {
         HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-type", MediaType.TEXT_XML_VALUE);
         String result = null;
+        VerbHandler handler = new VerbHandler();
+        handler.handle(paramMap);
         return new ResponseEntity<>(result, headers, HttpStatus.ACCEPTED);
     }
 
     @GetMapping(value = "oai")
     @ResponseBody
-    public ResponseEntity<String> get(@PathVariable("verb") String verb) {
+    public ResponseEntity<String> get(@RequestParam MultiValueMap<String,String> paramMap) {
         HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-type", MediaType.TEXT_XML_VALUE);
         String result = null;
+        VerbHandler handler = new VerbHandler();
+        handler.handle(paramMap);
+
         return new ResponseEntity<>(result, headers, HttpStatus.ACCEPTED);
     }
 
