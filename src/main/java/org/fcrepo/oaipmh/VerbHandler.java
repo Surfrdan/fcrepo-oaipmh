@@ -5,7 +5,10 @@
  */
 package org.fcrepo.oaipmh;
 
+import java.util.Objects;
 import org.fcrepo.oaipmh.Verb;
+import org.fcrepo.oaipmh.response.Response;
+import org.fcrepo.oaipmh.response.Identify;
 import org.springframework.util.MultiValueMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,15 +26,23 @@ public class VerbHandler {
 
     private Logger logger = LoggerFactory.getLogger(VerbHandler.class);
 
-    public void handle(MultiValueMap paramMap) {
+    public String handle(MultiValueMap paramMap, String uri) {
 
         String verb = String.valueOf(paramMap.getFirst("verb"));
+        String response = null;
 
         switch(verb) {
             case Verb.GET_RECORD:
                 break;
             case Verb.IDENTIFY:
-                identify(paramMap);
+                try {
+                    Identify doc = new Identify(paramMap, uri);
+                    response = doc.getXmlString();
+                } catch (Exception e) {
+                    logger.error("uncaught exception");
+                    e.printStackTrace(System.out);
+                    response = "TODO: ERROR Document";
+                }
                 break;
             case Verb.LIST_IDENTIFIERS:
                 break;
@@ -45,10 +56,11 @@ public class VerbHandler {
                 logger.error("Unknown verb: " + verb);
                 break;
         }
+        if (!Objects.isNull(response)) {
+            return response;
+        } else {
+            return "TODO: Verb Response Error";
+        }
     }
 
-    private String identify(MultiValueMap paramMap) {
-
-        return "";
-    }
 }

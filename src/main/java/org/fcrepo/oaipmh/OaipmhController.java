@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.util.MultiValueMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 //@RequestMapping(path = "/")
@@ -29,24 +30,23 @@ public class OaipmhController {
 
     @PostMapping(value = "oai", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     @ResponseBody
-    public ResponseEntity<String> post(@RequestParam MultiValueMap<String,String> paramMap) {
+    public ResponseEntity<String> post(@RequestParam MultiValueMap<String,String> paramMap, HttpServletRequest request) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-type", MediaType.TEXT_XML_VALUE);
         String result = null;
         VerbHandler handler = new VerbHandler();
-        handler.handle(paramMap);
+        handler.handle(paramMap, request.getRequestURL().toString());
         return new ResponseEntity<>(result, headers, HttpStatus.ACCEPTED);
     }
 
     @GetMapping(value = "oai")
     @ResponseBody
-    public ResponseEntity<String> get(@RequestParam MultiValueMap<String,String> paramMap) {
+    public ResponseEntity<String> get(@RequestParam MultiValueMap<String,String> paramMap, HttpServletRequest request) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-type", MediaType.TEXT_XML_VALUE);
         String result = null;
         VerbHandler handler = new VerbHandler();
-        handler.handle(paramMap);
-
+        result = handler.handle(paramMap, request.getRequestURL().toString());
         return new ResponseEntity<>(result, headers, HttpStatus.ACCEPTED);
     }
 
