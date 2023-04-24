@@ -4,26 +4,17 @@ import org.fcrepo.oaipmh.xml.OaiRoot;
 import org.fcrepo.oaipmh.response.Response;
 import org.fcrepo.oaipmh.xml.IdentifyElement;
 import org.fcrepo.oaipmh.Config;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBElement;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Unmarshaller;
-import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.annotation.XmlElement;
-import java.io.StringWriter;
-import java.io.FileOutputStream;
 import org.springframework.util.MultiValueMap;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.Primary;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Identify {
 
     static final String OAI_PROTOCOL_VERSION = "2.0";
+
+    static final String OAI_GRANULARITY = "YYYY-MM-DDThh:mm:ssZ";
+
+    static final String OAI_EARLIEST_DATESTAMP = "0000-01-01T00:00:00Z";
 
     protected IdentifyElement identifyElement;
 
@@ -40,8 +31,11 @@ public class Identify {
         identifyElement = new IdentifyElement();
         config = new Config();
         identifyElement.setProtocolVersion(OAI_PROTOCOL_VERSION);
+        identifyElement.setGranularity(OAI_GRANULARITY);
+        identifyElement.setEarliestDatestamp(OAI_EARLIEST_DATESTAMP);
         identifyElement.setBaseUrl(uri);
         identifyElement.setRepositoryName(config.getProperty("repository.name"));
+        identifyElement.setAdminEmail(config.getProperty("admin.email"));
         response.getOaiRoot().setObject(identifyElement);
     }
 
