@@ -10,7 +10,7 @@ public class Request {
     private String verb;
     private String uri;
 
-    public Request() {}
+    //public Request() {}
 
     @XmlAttribute(name = "verb")
     public String getVerb() {

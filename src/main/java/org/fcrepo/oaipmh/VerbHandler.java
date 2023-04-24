@@ -10,6 +10,10 @@ import org.fcrepo.oaipmh.Verb;
 import org.fcrepo.oaipmh.response.Response;
 import org.fcrepo.oaipmh.response.Identify;
 import org.springframework.util.MultiValueMap;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,11 +24,17 @@ import org.slf4j.LoggerFactory;
  *
  * @author Dan Field <dan.field@lyrasis.org>
  */
+@Configuration
 public class VerbHandler {
 
     public VerbHandler() {}
 
     private Logger logger = LoggerFactory.getLogger(VerbHandler.class);
+
+    private Identify doc;
+
+    //@Value("${repository.name}")
+    //protected String respositoryName;
 
     public String handle(MultiValueMap paramMap, String uri) {
 
@@ -36,8 +46,9 @@ public class VerbHandler {
                 break;
             case Verb.IDENTIFY:
                 try {
-                    Identify doc = new Identify(paramMap, uri);
-                    response = doc.getXmlString();
+                    //doc = new Identify(respositoryName,  paramMap, uri);
+                    doc = new Identify(paramMap, uri);
+                    response = doc.getResponse().getXmlString();
                 } catch (Exception e) {
                     logger.error("uncaught exception");
                     e.printStackTrace(System.out);
