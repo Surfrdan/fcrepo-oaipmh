@@ -9,6 +9,9 @@ import java.util.Objects;
 import org.fcrepo.oaipmh.Verb;
 import org.fcrepo.oaipmh.response.Response;
 import org.fcrepo.oaipmh.response.Identify;
+import org.fcrepo.oaipmh.response.Error;
+import org.fcrepo.oaipmh.response.ListMetadataFormats;
+import org.fcrepo.oaipmh.OaipmhException;
 import org.springframework.util.MultiValueMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -31,11 +34,6 @@ public class VerbHandler {
 
     private Logger logger = LoggerFactory.getLogger(VerbHandler.class);
 
-    private Identify doc;
-
-    //@Value("${repository.name}")
-    //protected String respositoryName;
-
     public String handle(MultiValueMap paramMap, String uri) {
 
         String verb = String.valueOf(paramMap.getFirst("verb"));
@@ -46,18 +44,29 @@ public class VerbHandler {
                 break;
             case Verb.IDENTIFY:
                 try {
-                    //doc = new Identify(respositoryName,  paramMap, uri);
-                    doc = new Identify(paramMap, uri);
+                    Identify doc = new Identify(paramMap, uri);
                     response = doc.getResponse().getXmlString();
                 } catch (Exception e) {
-                    logger.error("uncaught exception");
-                    e.printStackTrace(System.out);
-                    response = "TODO: ERROR Document";
+                    try {
+                        Error doc = new Error(paramMap, uri, e.getMessage());
+                        response = doc.getXmlString();
+                    } catch (Exception unhandled) {
+                        logger.error(unhandled.getMessage());
+                    }
                 }
                 break;
             case Verb.LIST_IDENTIFIERS:
                 break;
             case Verb.LIST_METADATA_FORMATS:
+                try {
+                    ListMetadataFormats doc = new ListMetadataFormats(paramMap, uri);
+                    //response = doc.getResponse().getXmlString();
+                } catch (Exception e) {
+                    logger.error("uncaught exception 2");
+                    e.printStackTrace(System.out);
+                    response = "TODO: ERROR Document 2";
+                }
+
                 break;
             case Verb.LIST_RECORDS:
                 break;

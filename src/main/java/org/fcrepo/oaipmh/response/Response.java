@@ -2,7 +2,7 @@ package org.fcrepo.oaipmh.response;
 
 import org.fcrepo.oaipmh.xml.OaiRoot;
 import org.fcrepo.oaipmh.xml.IdentifyElement;
-
+import org.fcrepo.oaipmh.OaipmhException;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
@@ -13,6 +13,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.util.MultiValueMap;
 import java.io.StringWriter;
 import java.io.FileOutputStream;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -20,8 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.xml.bind.PropertyException;
 
 public class Response {
-
-    //public static final String OAI_NS = "http://www.openarchives.org/OAI/2.0/";
 
     public static final String XSI_NS = "http://www.w3.org/2001/XMLSchema-instance";
 
@@ -37,15 +36,21 @@ public class Response {
 
     private MultiValueMap paramMap;
 
+    private List<String> errors;
+
     private Logger logger = LoggerFactory.getLogger(Response.class);
 
-    public Response(MultiValueMap paramMap, String uri) throws Exception {
-        this.uri = uri;
-        this.paramMap = paramMap;
+    /*
+    public Response() {
         this.oaiRoot = new OaiRoot();
-        jc = JAXBContext.newInstance(OaiRoot.class);
-        marshaller = jc.createMarshaller();
-        oaiRoot.setup();
+        try {
+            jc = JAXBContext.newInstance(OaiRoot.class);
+            marshaller = jc.createMarshaller();
+            oaiRoot.setup();
+        } catch (JAXBException e) {
+            logger.error("Unhandled JAXBException");
+        }
+
         try {
             oaiRoot.getRequest().setUri(uri);
             oaiRoot.getRequest().setVerb(paramMap.getFirst("verb").toString());
@@ -54,6 +59,34 @@ public class Response {
         } catch (PropertyException e) {
             logger.error("unhandled PropertyException");
         }
+    }
+    */
+
+    public Response(MultiValueMap paramMap, String uri) throws JAXBException  {
+        this.uri = uri;
+        this.paramMap = paramMap;
+        this.oaiRoot = new OaiRoot();
+        try {
+            jc = JAXBContext.newInstance(OaiRoot.class);
+            marshaller = jc.createMarshaller();
+            oaiRoot.setup();
+        } catch (JAXBException e) {
+            logger.error("Unhandled JAXBException");
+        }
+
+        try {
+            oaiRoot.getRequest().setUri(uri);
+            oaiRoot.getRequest().setVerb(paramMap.getFirst("verb").toString());
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, XSI_SCHEMA);
+        } catch (PropertyException e) {
+            logger.error("unhandled PropertyException");
+        }
+
+    }
+
+    public void addError(String error) {
+       errors.add(error);
     }
 
     public String getXmlString() throws Exception {

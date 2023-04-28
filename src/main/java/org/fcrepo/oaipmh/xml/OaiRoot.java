@@ -10,26 +10,29 @@ import java.time.temporal.ChronoUnit;
 import java.lang.Object;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-
+import java.util.List;
 import org.fcrepo.oaipmh.xml.Request;
 import org.fcrepo.oaipmh.xml.IdentifyElement;
+import org.fcrepo.oaipmh.xml.ListMetadataFormatsElement;
 
 @XmlRootElement(name="OAI-PMH")
 @XmlType(name="OAI-PMH",propOrder={"responseDate","request","object"})
-@XmlSeeAlso({IdentifyElement.class})
+@XmlSeeAlso({IdentifyElement.class,ListMetadataFormatsElement.class,ErrorElement.class})
 public class OaiRoot {
 
     protected Request request;
     protected String responseDate;
+    protected List<String> error;
     protected Object object;
 
     public OaiRoot() {
+
         Instant zuluTime = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         setResponseDate(zuluTime.toString());
     }
 
     public void setup() {
-        request = new Request();
+        this.request = new Request();
     }
 
 
