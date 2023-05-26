@@ -9,6 +9,7 @@ import java.util.Objects;
 import org.fcrepo.oaipmh.Verb;
 import org.fcrepo.oaipmh.response.Response;
 import org.fcrepo.oaipmh.response.Identify;
+import org.fcrepo.oaipmh.response.GetRecord;
 import org.fcrepo.oaipmh.response.Error;
 import org.fcrepo.oaipmh.response.ListMetadataFormats;
 import org.fcrepo.oaipmh.OaipmhException;
@@ -35,17 +36,23 @@ public class VerbHandler {
     private Logger logger = LoggerFactory.getLogger(VerbHandler.class);
 
     public String handle(MultiValueMap paramMap, String uri) {
-
         String verb = String.valueOf(paramMap.getFirst("verb"));
         String response = null;
 
         switch(verb) {
             case Verb.GET_RECORD:
+                try {
+                    GetRecord doc = new GetRecord(paramMap, uri);
+                    response = doc.getXmlString();
+                } catch (Exception e) {
+                    logger.error("getverb error");
+                    e.printStackTrace(System.out);
+                }
                 break;
             case Verb.IDENTIFY:
                 try {
                     Identify doc = new Identify(paramMap, uri);
-                    response = doc.getResponse().getXmlString();
+                    response = doc.getXmlString();
                 } catch (Exception e) {
                     try {
                         Error doc = new Error(paramMap, uri, e.getMessage());
@@ -62,9 +69,9 @@ public class VerbHandler {
                     ListMetadataFormats doc = new ListMetadataFormats(paramMap, uri);
                     //response = doc.getResponse().getXmlString();
                 } catch (Exception e) {
-                    logger.error("uncaught exception 2");
+                    logger.error("unhandled exception");
                     e.printStackTrace(System.out);
-                    response = "TODO: ERROR Document 2";
+                    response = "TODO: ERROR Document";
                 }
 
                 break;

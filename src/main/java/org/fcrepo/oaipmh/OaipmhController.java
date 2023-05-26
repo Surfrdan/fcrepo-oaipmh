@@ -27,23 +27,16 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 @RequestMapping
 public class OaipmhController {
 
-    //@Autowired
-    //private HttpHeaders headers;
     private @Autowired AutowireCapableBeanFactory beanFactory;
 
     private Logger logger = LoggerFactory.getLogger(OaipmhController.class);
 
-    //private VerbHandler handler;
-
     @PostMapping(value = "oai", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     @ResponseBody
     public ResponseEntity<String> post(@RequestParam MultiValueMap<String,String> paramMap, HttpServletRequest request) {
-        //headers.set("Content-type", MediaType.TEXT_XML_VALUE);
         String result = null;
         VerbHandler handler = new VerbHandler();
-        //beanFactory.autowireBean(handler);
         result = handler.handle(paramMap, request.getRequestURL().toString());
-        // return new ResponseEntity<>(result, headers, HttpStatus.ACCEPTED);
         return ResponseEntity.ok()
             .header("Content-type", MediaType.TEXT_XML_VALUE)
             .body(result);
@@ -53,13 +46,11 @@ public class OaipmhController {
     @GetMapping(value = "oai")
     @ResponseBody
     public ResponseEntity<String> get(@RequestParam MultiValueMap<String,String> paramMap, HttpServletRequest request) {
-        // headers.set("Content-type", MediaType.TEXT_XML_VALUE);
         String result = null;
         VerbHandler handler = new VerbHandler();
-        beanFactory.autowireBean(handler);
+        // beanFactory.autowireBean(handler);
 
         result = handler.handle(paramMap, request.getRequestURL().toString());
-        //return new ResponseEntity<>(result, headers, HttpStatus.ACCEPTED);
         return ResponseEntity.ok()
             .header("Content-type", MediaType.TEXT_XML_VALUE)
             .body(result);

@@ -4,13 +4,13 @@ import org.fcrepo.oaipmh.response.Response;
 import org.fcrepo.oaipmh.xml.OaiRoot;
 import org.fcrepo.oaipmh.xml.IdentifyElement;
 import org.fcrepo.oaipmh.OaipmhException;
-import org.fcrepo.oaipmh.Config;
 import org.springframework.util.MultiValueMap;
 import jakarta.xml.bind.JAXBException;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Identify {
+public class Identify extends Response {
 
     static final String OAI_PROTOCOL_VERSION = "2.0";
 
@@ -24,23 +24,13 @@ public class Identify {
 
     private Logger logger = LoggerFactory.getLogger(Identify.class);
 
-    protected Response response;
+    private static final List<String> ALLOWED_ARGS = List.of();
 
-    protected Config config;
+    public Identify(MultiValueMap paramMap, String uri) throws OaipmhException, JAXBException {
+        super(paramMap, uri);
+        checkArgs(ALLOWED_ARGS);
 
-    public Identify() {}
-
-    public Identify(MultiValueMap paramMap, String uri) throws OaipmhException  {
-        if(paramMap.size() > 1) {
-            throw new OaipmhException("badArgument");
-        }
-        try {
-            this.response = new Response(paramMap, uri);
-        } catch (JAXBException e) {
-            logger.error("TODO: Unhandled JAXBException 1");
-        }
         identifyElement = new IdentifyElement();
-        config = new Config();
         identifyElement.setProtocolVersion(OAI_PROTOCOL_VERSION);
         identifyElement.setGranularity(OAI_GRANULARITY);
         identifyElement.setEarliestDatestamp(OAI_EARLIEST_DATESTAMP);
@@ -48,10 +38,7 @@ public class Identify {
         identifyElement.setRepositoryName(config.getProperty("repository.name"));
         identifyElement.setDeletedRecord(OAI_DELETED_RECORD);
         identifyElement.setAdminEmail(config.getProperty("admin.email"));
-        this.response.getOaiRoot().setObject(identifyElement);
+        getOaiRoot().setObject(identifyElement);
     }
 
-    public Response getResponse() {
-        return this.response;
-    }
 }

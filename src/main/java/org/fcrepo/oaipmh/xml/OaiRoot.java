@@ -17,7 +17,12 @@ import org.fcrepo.oaipmh.xml.ListMetadataFormatsElement;
 
 @XmlRootElement(name="OAI-PMH")
 @XmlType(name="OAI-PMH",propOrder={"responseDate","request","object"})
-@XmlSeeAlso({IdentifyElement.class,ListMetadataFormatsElement.class,ErrorElement.class})
+@XmlSeeAlso({
+    IdentifyElement.class,
+    ListMetadataFormatsElement.class,
+    ErrorElement.class,
+    GetRecordElement.class
+})
 public class OaiRoot {
 
     protected Request request;

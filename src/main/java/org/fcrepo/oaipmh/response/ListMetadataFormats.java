@@ -5,6 +5,7 @@ import org.fcrepo.oaipmh.response.Response;
 import org.fcrepo.oaipmh.xml.ListMetadataFormatsElement;
 import org.fcrepo.oaipmh.xml.MetadataFormatElement;
 import org.fcrepo.oaipmh.Config;
+import org.fcrepo.oaipmh.OaipmhException;
 import org.springframework.util.MultiValueMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,7 @@ import jakarta.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ListMetadataFormats {
+public class ListMetadataFormats extends Response {
 
     static final String OAI_DC_SCHEMA = "http://www.openarchives.org/OAI/2.0/oai_dc.xsd";
 
@@ -24,24 +25,16 @@ public class ListMetadataFormats {
 
     private Logger logger = LoggerFactory.getLogger(Identify.class);
 
-    private Response response;
-
     private Config config;
 
     private ListMetadataFormatsElement listMetadataFormatsElement;
 
-    public ListMetadataFormats() {}
+    private static final List<String> ALLOWED_ARGS = List.of("identifier");
 
-    public ListMetadataFormats(MultiValueMap paramMap, String uri) {
-        if (paramMap.containsKey("identifier")) {
-            // TODO: check for existance of PID and throw exception to be turned into an errorDoc
-            logger.error("TODO: identifier arg not supported yet");
-        }
-        try {
-            response = new Response(paramMap, uri);
-        } catch (JAXBException e) {
-            logger.error("Unhandles JAXBException");
-        }
+    public ListMetadataFormats(MultiValueMap paramMap, String uri) throws JAXBException, OaipmhException {
+        super(paramMap, uri);
+        checkArgs(ALLOWED_ARGS);
+
         config = new Config();
         listMetadataFormatsElement = new ListMetadataFormatsElement();
         var metadataFormats = new ArrayList<MetadataFormatElement>();
@@ -59,10 +52,7 @@ public class ListMetadataFormats {
         metadataFormats.add(rdfFormat);
 
         listMetadataFormatsElement.setMetadataFormatElement(metadataFormats);
-        response.getOaiRoot().setObject(listMetadataFormatsElement);
+        getOaiRoot().setObject(listMetadataFormatsElement);
     }
 
-    public Response getResponse() {
-        return this.response;
-    }
 }

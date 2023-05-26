@@ -3,7 +3,9 @@ package org.fcrepo.oaipmh.response;
 import org.fcrepo.oaipmh.xml.OaiRoot;
 import org.fcrepo.oaipmh.xml.IdentifyElement;
 import org.fcrepo.oaipmh.OaipmhException;
+import org.fcrepo.oaipmh.Config;
 import jakarta.xml.bind.JAXBContext;
+import org.eclipse.persistence.jaxb.JAXBContextFactory;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
@@ -19,6 +21,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.xml.bind.PropertyException;
+import java.util.Iterator;
+import java.util.Set;
+import org.apache.commons.lang3.SerializationUtils;
 
 public class Response {
 
@@ -34,40 +39,27 @@ public class Response {
 
     protected String uri;
 
-    private MultiValueMap paramMap;
+    protected String verb;
+
+    protected MultiValueMap paramMap;
 
     private List<String> errors;
 
+    protected Config config;
+
     private Logger logger = LoggerFactory.getLogger(Response.class);
 
-    /*
-    public Response() {
-        this.oaiRoot = new OaiRoot();
-        try {
-            jc = JAXBContext.newInstance(OaiRoot.class);
-            marshaller = jc.createMarshaller();
-            oaiRoot.setup();
-        } catch (JAXBException e) {
-            logger.error("Unhandled JAXBException");
-        }
-
-        try {
-            oaiRoot.getRequest().setUri(uri);
-            oaiRoot.getRequest().setVerb(paramMap.getFirst("verb").toString());
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, XSI_SCHEMA);
-        } catch (PropertyException e) {
-            logger.error("unhandled PropertyException");
-        }
-    }
-    */
-
     public Response(MultiValueMap paramMap, String uri) throws JAXBException  {
+        this.config = new Config();
         this.uri = uri;
         this.paramMap = paramMap;
+        if(paramMap.get("verb") != null) {
+            this.verb = paramMap.get("verb").toString();
+            logger.info(this.verb);
+        }
         this.oaiRoot = new OaiRoot();
         try {
-            jc = JAXBContext.newInstance(OaiRoot.class);
+            jc = JAXBContextFactory.createContext(new Class[] {OaiRoot.class}, null);
             marshaller = jc.createMarshaller();
             oaiRoot.setup();
         } catch (JAXBException e) {
@@ -76,13 +68,25 @@ public class Response {
 
         try {
             oaiRoot.getRequest().setUri(uri);
-            oaiRoot.getRequest().setVerb(paramMap.getFirst("verb").toString());
+            oaiRoot.getRequest().setVerb(verb);
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, XSI_SCHEMA);
         } catch (PropertyException e) {
             logger.error("unhandled PropertyException");
         }
 
+    }
+
+    public void checkArgs(List<String> allowedArgs) throws OaipmhException {
+        this.paramMap.remove("verb");
+        Iterator<String> mapIterator = paramMap.keySet().iterator();
+        while(mapIterator.hasNext()) {
+            String key = mapIterator.next();
+            if(!allowedArgs.contains(key)) {
+                logger.error("badArgument: " + key);
+                throw new OaipmhException("badArgument");
+            }
+        }
     }
 
     public void addError(String error) {
@@ -91,6 +95,7 @@ public class Response {
 
     public String getXmlString() throws Exception {
         StringWriter xml = new StringWriter();
+        marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
         marshaller.marshal(oaiRoot, xml);
         var xmlString = xml.toString();
         return xmlString;
