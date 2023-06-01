@@ -28,7 +28,7 @@ public class Identify extends Response {
 
     public Identify(MultiValueMap paramMap, String uri) throws OaipmhException, JAXBException {
         super(paramMap, uri);
-        checkArgs(ALLOWED_ARGS);
+        checkArgs(paramMap, ALLOWED_ARGS);
 
         identifyElement = new IdentifyElement();
         identifyElement.setProtocolVersion(OAI_PROTOCOL_VERSION);

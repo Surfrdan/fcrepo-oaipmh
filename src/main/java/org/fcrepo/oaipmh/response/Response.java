@@ -52,10 +52,9 @@ public class Response {
     public Response(MultiValueMap paramMap, String uri) throws JAXBException  {
         this.config = new Config();
         this.uri = uri;
-        this.paramMap = paramMap;
+
         if(paramMap.get("verb") != null) {
             this.verb = paramMap.get("verb").toString();
-            logger.info(this.verb);
         }
         this.oaiRoot = new OaiRoot();
         try {
@@ -77,8 +76,8 @@ public class Response {
 
     }
 
-    public void checkArgs(List<String> allowedArgs) throws OaipmhException {
-        this.paramMap.remove("verb");
+    public void checkArgs(MultiValueMap paramMap, List<String> allowedArgs) throws OaipmhException {
+        paramMap.remove("verb");
         Iterator<String> mapIterator = paramMap.keySet().iterator();
         while(mapIterator.hasNext()) {
             String key = mapIterator.next();

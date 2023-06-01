@@ -33,7 +33,7 @@ public class ListMetadataFormats extends Response {
 
     public ListMetadataFormats(MultiValueMap paramMap, String uri) throws JAXBException, OaipmhException {
         super(paramMap, uri);
-        checkArgs(ALLOWED_ARGS);
+        checkArgs(paramMap, ALLOWED_ARGS);
 
         config = new Config();
         listMetadataFormatsElement = new ListMetadataFormatsElement();

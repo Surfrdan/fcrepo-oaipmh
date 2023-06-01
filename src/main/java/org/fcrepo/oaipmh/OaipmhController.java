@@ -34,6 +34,7 @@ public class OaipmhController {
     @PostMapping(value = "oai", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     @ResponseBody
     public ResponseEntity<String> post(@RequestParam MultiValueMap<String,String> paramMap, HttpServletRequest request) {
+        // var newParamMap = paramMap.deepCopy();
         String result = null;
         VerbHandler handler = new VerbHandler();
         result = handler.handle(paramMap, request.getRequestURL().toString());
@@ -48,7 +49,6 @@ public class OaipmhController {
     public ResponseEntity<String> get(@RequestParam MultiValueMap<String,String> paramMap, HttpServletRequest request) {
         String result = null;
         VerbHandler handler = new VerbHandler();
-        // beanFactory.autowireBean(handler);
 
         result = handler.handle(paramMap, request.getRequestURL().toString());
         return ResponseEntity.ok()

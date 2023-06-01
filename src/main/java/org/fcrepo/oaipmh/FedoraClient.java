@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.io.IOException;
 import java.lang.InterruptedException;
 import org.fcrepo.oaipmh.Config;
+import org.fcrepo.oaipmh.OaipmhException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +66,7 @@ public final class FedoraClient {
         return client;
     }
 
-    public String getRecord(String pid) {
+    public String getRecord(String pid, String format) throws OaipmhException {
         var uri = URI.create(config.getProperty("fcrepo.root") + pid);
         logger.info("URL " + uri.toString());
         HttpRequest request = HttpRequest.newBuilder()
@@ -85,12 +86,17 @@ public final class FedoraClient {
             logger.error("InteruptedException in getRecord");
             record = "ERROR";
         }
+
+        switch(format) {
+            case "rdf":
+                // TODO: Add schema to root element. see documentation in  http://www.openarchives.org/OAI/2.0/rdf.xsd
+                break;
+            case "dc":
+                break;
+            default:
+                throw new OaipmhException("Invalid format supplied to fedora client: " + format);
+        }
         return record;
     }
 
-    /*
-    public getObject(String pid) {
-        return "object";
-    }
-    */
 }
