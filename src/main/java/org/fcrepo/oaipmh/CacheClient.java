@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.Files;
+import java.io.File;
 import java.io.IOException;
 import java.time.temporal.ChronoUnit;
 import java.time.Instant;
@@ -40,29 +41,39 @@ public final class CacheClient {
 
     public String get(String identifier, String format) throws OaipmhException {
         String record = "";
-        Path filePath = Path.of(root + identifier + "." + format);
+        Path filePath = Path.of(root + File.separator + identifier + "." + format);
         logger.info(filePath.toString());
+        FileTime creationTime;
         try {
-            FileTime creationTime = (FileTime) Files.getAttribute(filePath, "creationTime");
-            var lifetime = Long.parseLong(config.getProperty("cache.lifetime"));
-
-            if(creationTime.toInstant().plus(lifetime, ChronoUnit.MINUTES).isBefore(Instant.now())) {
-                logger.debug("cached file is more than " + lifetime + " minutes old. Regenerating");
-                FedoraClient fedora = FedoraClient.getInstance();
-                record = fedora.getRecord(identifier, "rdf");
-                put(record, identifier, "rdf");
-            } else {
-                logger.info("Cache HIT");
-                record = Files.readString(filePath);
-            }
-        } catch (IOException ex) {
-            logger.error("Failed to retrieve cache file: " + filePath.toString());
+            creationTime = (FileTime) Files.getAttribute(filePath, "creationTime");
+        } catch (IOException e) {
+            logger.info("cache file doesnt exist yet: " + filePath.toString());
+            FedoraClient fedora = FedoraClient.getInstance();
+            record = fedora.getRecord(identifier, format);
+            put(record, identifier, format);
+            return record;
         }
+
+        var lifetime = Long.parseLong(config.getProperty("cache.lifetime"));
+        if(creationTime.toInstant().plus(lifetime, ChronoUnit.MINUTES).isBefore(Instant.now())) {
+            logger.debug("cached file is more than " + lifetime + " minutes old. Regenerating");
+            FedoraClient fedora = FedoraClient.getInstance();
+            record = fedora.getRecord(identifier, format);
+            put(record, identifier, format);
+        } else {
+            logger.info("Cache HIT");
+            try {
+                record = Files.readString(filePath);
+            } catch (IOException e) {
+                logger.error("error reading cached file: " + filePath);
+            }
+        }
+
         return record;
     }
 
     public static void put(String record, String identifier, String format) {
-        Path filePath = Path.of(root + identifier + "." + format);
+        Path filePath = Path.of(root + File.separator + identifier + "." + format);
         try {
             Files.deleteIfExists(filePath);
             Files.writeString(filePath, record);

@@ -67,7 +67,7 @@ public final class FedoraClient {
     }
 
     public String getRecord(String pid, String format) throws OaipmhException {
-        var uri = URI.create(config.getProperty("fcrepo.root") + pid);
+        var uri = URI.create(config.getProperty("fcrepo.root") + "/" + pid);
         logger.info("URL " + uri.toString());
         HttpRequest request = HttpRequest.newBuilder()
            .uri(uri)
