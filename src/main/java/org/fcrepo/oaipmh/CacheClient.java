@@ -23,9 +23,12 @@ public final class CacheClient {
 
     private static Logger logger = LoggerFactory.getLogger(CacheClient.class);
 
+    private static FedoraClient fedora;
+
     private CacheClient() {
         this.config = new Config();
         this.root = config.getProperty("cache.root");
+        this.fedora = FedoraClient.getInstance();
     }
 
     private String getRoot() {
@@ -42,13 +45,12 @@ public final class CacheClient {
     public String get(String identifier, String format) throws OaipmhException {
         String record = "";
         Path filePath = Path.of(root + File.separator + identifier + "." + format);
-        logger.info(filePath.toString());
+        logger.debug(filePath.toString());
         FileTime creationTime;
         try {
             creationTime = (FileTime) Files.getAttribute(filePath, "creationTime");
         } catch (IOException e) {
-            logger.info("cache file doesnt exist yet: " + filePath.toString());
-            FedoraClient fedora = FedoraClient.getInstance();
+            logger.debug("cache file doesnt exist yet: " + filePath.toString());
             record = fedora.getRecord(identifier, format);
             put(record, identifier, format);
             return record;
@@ -57,11 +59,10 @@ public final class CacheClient {
         var lifetime = Long.parseLong(config.getProperty("cache.lifetime"));
         if(creationTime.toInstant().plus(lifetime, ChronoUnit.MINUTES).isBefore(Instant.now())) {
             logger.debug("cached file is more than " + lifetime + " minutes old. Regenerating");
-            FedoraClient fedora = FedoraClient.getInstance();
             record = fedora.getRecord(identifier, format);
             put(record, identifier, format);
         } else {
-            logger.info("Cache HIT");
+            logger.debug("Cache HIT");
             try {
                 record = Files.readString(filePath);
             } catch (IOException e) {
